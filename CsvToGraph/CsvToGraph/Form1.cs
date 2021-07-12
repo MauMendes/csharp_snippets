@@ -26,24 +26,42 @@ namespace CsvToGraph
             openFileDialog1.Multiselect = false;
             openFileDialog1.FileName = "";
 
+            List<double> data = new List<double>();
+            List<double> data2 = new List<double>();
+            char[] delimiters = { '\t' };
+
+
             if (openFileDialog1.ShowDialog() == DialogResult.OK) {
                 string WholePath = openFileDialog1.FileName;
                 string FileName = openFileDialog1.SafeFileName;
                 string DirectoryPath = Path.GetDirectoryName(WholePath);
 
                 MessageBox.Show(WholePath + " " + FileName + " " + DirectoryPath);
+
+                Stream stream = File.Open(WholePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                StreamReader FileStream = new StreamReader(stream);
+                string HeaderLine = FileStream.ReadLine();
+           
+                var columns = HeaderLine.Split(delimiters);
+
+                string Line;
+                while ((Line = FileStream.ReadLine()) != null)
+                {
+                    string[] DataColumns = FileStream.ReadLine().Split(delimiters);
+                    data.Add(Convert.ToDouble(DataColumns[0]));
+                    data2.Add(Convert.ToDouble(DataColumns[4]));
+                }
+
             }
 
 
-            double[] dataX = new double[] { 1, 2, 3, 4, 5 };
-            double[] dataY = new double[] { 1, 4, 9, 16, 25 };
-
             var plt = formsPlot1.Plot;
 
-
-            double[] values = ScottPlot.DataGen.RandomWalk(1_000_000);
-            plt.AddSignal(values, sampleRate: 48_000);
+            plt.AddSignal(data.ToArray(), sampleRate: 48_000);
+            plt.AddSignal(data2.ToArray(), sampleRate: 48_000);
             plt.Title("One Million Points");
+            plt.AxisAuto();
+
 
             plt.SaveFig("quickstart_signal.png");
         }
